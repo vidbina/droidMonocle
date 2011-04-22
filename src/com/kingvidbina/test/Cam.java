@@ -95,7 +95,6 @@ public class Cam extends Activity
 		Log.d(TAG, "Camera opened");
 		mParams = mCamera.getParameters();
 		mParams.setPreviewSize(480, 320);
-		mParams.
 		mCamera.setParameters(mParams);
 		mScope.setCamera(mCamera);
 		return mCamera;
