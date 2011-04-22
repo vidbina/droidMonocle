@@ -1,0 +1,66 @@
+package com.kingvidbina.test;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.content.Intent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.util.Log;
+
+
+public class Main extends Activity implements OnClickListener
+{
+    public static final String TAG = "Test";
+
+    /** Called when the activity is first created. */
+    @Override
+    public void onCreate(Bundle icicle)
+    {
+	Log.v(TAG, "onCreate app");
+        super.onCreate(icicle);
+        setContentView(R.layout.main);
+
+	try{
+	    Button btnAbout = (Button) findViewById(R.id.button_about);
+	    btnAbout.setOnClickListener((View.OnClickListener) this);
+	    Log.v(TAG, "inflation complete");
+	}catch(Exception e){
+	    Log.v(TAG, "inflate exception: " + e.toString());
+	}
+    }
+
+    @Override
+    public void onPause(){
+	super.onPause();
+	Log.v(TAG, "app paused");
+    }
+
+    @Override
+    public void onDestroy(){
+	super.onDestroy();
+	Log.v(TAG, "===================================");
+    }
+    
+    public void onClick(View clicked){
+	Log.v(TAG, "Main.onClick method + " + clicked.toString());
+	switch(clicked.getId()){
+	case R.id.button_about:
+	    Intent i = new Intent(this, About.class);
+	    startActivity(i);
+	    break;
+	default:
+	    Log.v(TAG, "unknown click");
+	    break;
+	}
+    }
+
+    public void startCam(View v){
+	Log.v(TAG, "startCam");
+	try{
+	    startActivity(new Intent(this, Cam.class));
+	}catch(Exception e){
+	    Log.v(TAG, "failed to start activity:Cam" + e.toString());
+	}
+    }
+}

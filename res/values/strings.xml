@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Main</string>
+    <string name="app_about">What you might want to know</string>
+    <string name="app_cam">The eyes of the project</string>
+
+    <string name="text_main">Hahahahaha</string>
+    <string name="text_cam">Camera ON</string>
+
+    <string name="button_start">Start</string>
+    <string name="button_about">About</string>
+
+    <string name="about_text">Written by David Asabina</string>
+</resources>
