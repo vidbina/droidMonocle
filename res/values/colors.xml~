@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-  <color name="ghost">#3399CC</color>
-  <color name="target">#FF6600</color>
-  <color name="marker">#FFFF00</color>
-</resources>
