@@ -16,6 +16,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".Cam"
+		  android:configChanges="orientation"
                   android:label="@string/app_cam" >
         </activity>
 	<activity android:name=".About"
