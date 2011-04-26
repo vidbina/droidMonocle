@@ -4,4 +4,7 @@
   <color name="ghost">#3399CC</color>
   <color name="target">#FF6600</color>
   <color name="marker">#FFFF00</color>
+
+  <color name="horizon">#AF3235</color>
+  <color name="canvas">#69971D</color>
 </resources>

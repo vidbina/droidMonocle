@@ -15,37 +15,58 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.OrientationEventListener;
 import android.hardware.SensorManager;
 
-import com.kingvidbina.test.ScopeView;
+import android.view.ViewGroup;
+import android.view.LayoutInflater;
+import android.view.InflateException;
+
+import com.kingvidbina.test.ScopePreview;
 import com.kingvidbina.test.ImageProcessor;
+import com.kingvidbina.test.HorizonView;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
 
 // TODO: rework all try - catch blocks to remove catching generic exceptions
+// TODO: handle orientation changes properly (rotation possibilities start at API Level 11). Orientation has been hardwired to landscape (see manifest)
 public class Cam extends Activity implements Camera.PreviewCallback
 {
     /* don't ever forget to add uses-features
      * and uses-permission tags before the application
      * tags in the manifest. This cause me a lot of trouble
-     * and cost me muck precious time.
+     * and cost me much precious time.
      */
     public static final String TAG = "Test";
+    private static final String CLASS = "Cam:";
+
     private Camera mCamera;
     private SurfaceHolder mHolder;
     private Context mContext;
-    private ScopeView mScope;
+    private ScopePreview mScope;
     private Parameters mParams;
-    private Scanner mScanner;
+    private HorizonView mTest;
+    private LayoutParams mTestParams;
+    private OrientationEventListener mOrientation;
 
     @Override
     public void onCreate(Bundle icicle){
-	Log.v(TAG, "onCreate()");
+	Log.v(TAG, CLASS + "onCreate()");
 	super.onCreate(icicle);
 	try{
+	    mTest = new HorizonView(this);
 	    setContentView(R.layout.cam);
+	    Log.v(TAG, mTest.toString());
+	    mTestParams = new LayoutParams(50, 50);
+	    Log.v(TAG, mTestParams.toString());
+	    addContentView(mTest, mTestParams);
+	    setOrientationListener();
+	    mOrientation.enable();
+	    Log.v(TAG, CLASS + "onCreate(): contentview set");
+	}catch(InflateException e){
+	    // TODO: remove generic exception
+	    Log.v(TAG, CLASS + "onCreate(): InflateExeption: " + e.toString());
 	}catch(Exception e){
-	    // TODpO: remove generic exception
-	    Log.v(TAG, "activity:Cam - inflate exception: " + e.toString());
+	    // catches everything else
+	    Log.v(TAG, CLASS + "onCreate(): Exception: " + e.toString());
 	}
 	// start thread to load cam
 	Log.v(TAG, this.toString());
@@ -56,45 +77,43 @@ public class Cam extends Activity implements Camera.PreviewCallback
 	if(mCamera == null){
 	    new InitCamera().execute();
 	}
-	Log.d(TAG, "create done");
+	Log.d(TAG, CLASS + "onCreate(): done");
     }
 
     @Override
     public void onPause(){
-	Log.v(TAG, "onPause()");
+	Log.v(TAG, CLASS + "onPause()");
 	mScope.haltPreview();
 	// stop cam if existent
 	try{
 	    if(mCamera != null){ 
 		mCamera.setPreviewCallback(null);
 		mCamera.release(); 
-		Log.v(TAG, "camera released");
+		Log.v(TAG, CLASS + "onPause(): camera released");
 	    }
 	}catch(Exception e){
 	    // TODO: remove generic exception
-	    Log.e(TAG, "onPause exception: " + e.toString());
+	    Log.e(TAG, CLASS + "onPause(): Exception: " + e.toString());
 	}
 	/* painfull lesson learned invoke super method
 	 * spend a few hours troubleshooting for the source
 	 * of that dreaded Force Close m*f*er
 	 */
-	Log.v(TAG, "<<");
+	mOrientation.disable();
 	super.onPause();
-	Log.v(TAG, ">>");
     }
     
     @Override
     public void onStop(){
-	Log.v(TAG, "onStop()");
+	Log.v(TAG, CLASS + "onStop()");
 	super.onStop();
     }
 
     public void onReady(){
-	Log.v(TAG, "onReady()");
+	Log.v(TAG, CLASS + "onReady()");
 	mCamera.setPreviewCallback(this);
 	mScope.showPreview();
-	Log.v(TAG, "preview started");
-	Log.v(TAG, "preview callback set");
+	Log.v(TAG, CLASS + "onReady(): done");
     }
     
     /**
@@ -106,10 +125,18 @@ public class Cam extends Activity implements Camera.PreviewCallback
 
     /** sets the View after camera has been initialized */
     private void setView(){
-	Log.v(TAG, "setView()");
+	Log.v(TAG, CLASS + "setView()");
 	if(mScope == null){
-	    mScope = (ScopeView) this.findViewById(R.id.scope);
+	    mScope = (ScopePreview) this.findViewById(R.id.scope);
        	}
+    }
+
+    private void setOrientationListener(){
+	mOrientation = new OrientationEventListener(this, SensorManager.SENSOR_DELAY_UI){
+		public void onOrientationChanged(int orientation){
+		    mTest.setAngle(orientation);
+		}
+	    };
     }
 
     private class InitCamera extends AsyncTask <Integer, Void, Camera>{
@@ -120,10 +147,10 @@ public class Cam extends Activity implements Camera.PreviewCallback
 	 */
 
 	protected Camera doInBackground(Integer... id){
-	    Log.v(TAG, "AsyncTask:InitCamera started");
+	    Log.v(TAG, CLASS + "AsyncTask:InitCamera");
 	    try{
 		mCamera = Camera.open();
-		Log.d(TAG, "Camera opened");
+		Log.d(TAG, CLASS + "AsyncTask:InitCamera: doInBackground(): Camera opened");
 		mParams = mCamera.getParameters();
 		mParams.setPreviewSize(480, 320);
 		//mParams.setPreviewFormat(PixelFormat.NV21);
@@ -132,17 +159,17 @@ public class Cam extends Activity implements Camera.PreviewCallback
 		return mCamera;
 	    }catch(RuntimeException e){
 		// TODO: remove generic exception
-		Log.e(TAG, "invalid params: " + e.toString());
+		Log.e(TAG, CLASS + "AsyncTask:InitCamera: doInBackground(): RuntimeExceptions: " + e.toString());
 	    }catch(Exception e){
-		Log.e(TAG, "doInBackground: " + e.toString());
+		Log.e(TAG, CLASS + "AsyncTask:InitCamera: doInBackground(): Exception: " + e.toString());
 	    }
 	    return((Camera) null);
 	}
 	
 	protected void onPostExecute(Camera x){
-	    Log.v(TAG, "post AsyncTask:InitCamera");
+	    Log.v(TAG, CLASS + "AsyncTask:InitCamera: onPostExecute()");
 	    if(mCamera == null){ 
-		Log.e(TAG, "failed to setup a camera");
+		Log.e(TAG, CLASS + "AsyncTask:InitCamera: onPostExecute(): failed to setup a camera");
 		return; 
 	    }
 
@@ -151,7 +178,7 @@ public class Cam extends Activity implements Camera.PreviewCallback
 		onReady();
 	    }catch(Exception e){
 		// TODO: remove generic exception
-		Log.v(TAG, "exception in onPostExecute: " + e.toString());
+		Log.v(TAG, CLASS + "AsyncTask:InitCamera: onPostExecute(): Exception: " + e.toString());
 	    }
 	}
     }
