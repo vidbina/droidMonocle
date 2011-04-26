@@ -19,9 +19,13 @@ import android.view.ViewGroup;
 import android.view.LayoutInflater;
 import android.view.InflateException;
 
+//temp
+import android.graphics.Point;
+
 import com.kingvidbina.test.ScopePreview;
 import com.kingvidbina.test.ImageProcessor;
 import com.kingvidbina.test.HorizonView;
+import com.kingvidbina.test.ProcessView;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
@@ -44,6 +48,7 @@ public class Cam extends Activity implements Camera.PreviewCallback
     private ScopePreview mScope;
     private Parameters mParams;
     private HorizonView mTest;
+    private ProcessView mProcessView;
     private LayoutParams mTestParams;
     private OrientationEventListener mOrientation;
 
@@ -52,12 +57,15 @@ public class Cam extends Activity implements Camera.PreviewCallback
 	Log.v(TAG, CLASS + "onCreate()");
 	super.onCreate(icicle);
 	try{
+	    // TODO: organize this
 	    mTest = new HorizonView(this);
+	    mProcessView = new ProcessView(this);
 	    setContentView(R.layout.cam);
 	    Log.v(TAG, mTest.toString());
 	    mTestParams = new LayoutParams(50, 50);
 	    Log.v(TAG, mTestParams.toString());
 	    addContentView(mTest, mTestParams);
+	    addContentView(mProcessView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
 	    setOrientationListener();
 	    Log.v(TAG, CLASS + "onCreate(): contentview set");
 	}catch(InflateException e){

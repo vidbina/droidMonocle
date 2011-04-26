@@ -5,8 +5,9 @@ import android.util.Log;
 
 public class ImageProcessor {
     public static final String TAG = "Test";
+    // get image and return a list of values that correspond to respective pixellocales
+    // don't do anything graphically in this class, just simple mathematical operations
 
-    private Canvas[] mCanvas;
     //    private Algorithm mAlgorithm;
 
     public ImageProcessor(){
