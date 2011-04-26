@@ -59,7 +59,6 @@ public class Cam extends Activity implements Camera.PreviewCallback
 	    Log.v(TAG, mTestParams.toString());
 	    addContentView(mTest, mTestParams);
 	    setOrientationListener();
-	    mOrientation.enable();
 	    Log.v(TAG, CLASS + "onCreate(): contentview set");
 	}catch(InflateException e){
 	    // TODO: remove generic exception
@@ -113,6 +112,7 @@ public class Cam extends Activity implements Camera.PreviewCallback
 	Log.v(TAG, CLASS + "onReady()");
 	mCamera.setPreviewCallback(this);
 	mScope.showPreview();
+	mOrientation.enable();
 	Log.v(TAG, CLASS + "onReady(): done");
     }
     

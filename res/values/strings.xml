@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Main</string>
+    <string name="app_name">Monocle</string>
     <string name="app_about">What you might want to know</string>
     <string name="app_cam">The eyes of the project</string>
 
