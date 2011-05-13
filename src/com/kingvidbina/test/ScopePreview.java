@@ -51,7 +51,10 @@ public class ScopePreview extends SurfaceView implements SurfaceHolder.Callback
 	mCanvas = new Canvas(mBitmap);
     }
 
-    /** prepares the holder */
+    /**
+     * prepares the holder 
+     * 
+     */
     private void setupHolder(){
 	Log.v(TAG, CLASS + "setupHolder()");
 	mHolder = getHolder();

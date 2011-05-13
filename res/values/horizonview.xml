@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <dimen name="horizonstrokewidth">10dp</dimen>
+  <dimen name="horizonlength">100dp</dimen>
+  <dimen name="horizonheight">100dp</dimen>
+  
+  <color name="horizoncolor">#64AF3235</color>
+</resources>
