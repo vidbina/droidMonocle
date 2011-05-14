@@ -9,10 +9,18 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.drawable.shapes.Shape;
+import android.graphics.Path;
+import android.graphics.Path.Direction;
+import android.graphics.RectF;
+import android.graphics.Paint.Style;
+import android.graphics.Typeface;
 
 import java.lang.Math;
+import java.lang.String;
+import java.lang.Integer;
 
 // TODO: move as much drawing data to xml as possible (colors, dimensions, etc.)
+// REORGANISE CODE
 
 /**
  * A view to portray angular offset from the horizon.
@@ -27,6 +35,8 @@ public class HorizonView extends View {
     private static final String CLASS = "HorizonView:";
     // the paint properties of the marker
     private Paint mPaint = new Paint();
+    private Paint mMarkerPaint = new Paint();
+    private Paint mTextPaint = new Paint();
     // context of the view
     private Context mContext;
     // NOT USED
@@ -39,6 +49,8 @@ public class HorizonView extends View {
     private Point mStart;
     // the calculated end point of the marker
     private Point mEnd;
+    // path containing the marker
+    private Path mMarker;
     // flag to indicate whether object is properly set-up
     private boolean mReady;
     // flag to indicate whether object is ready to be drawn
@@ -50,6 +62,7 @@ public class HorizonView extends View {
     private Shape mShape;
     // the context resources
     private Resources mRes;
+    private int mAngle;
     /**
      * 
      */
@@ -83,7 +96,18 @@ public class HorizonView extends View {
 	    
 	    mPaint.setColor(mRes.getColor(R.color.horizoncolor));
 	    mPaint.setStrokeWidth(mRes.getDimension(R.dimen.horizonstrokewidth));
-	    mPaint.setDither(true);
+	    mPaint.setAntiAlias(true);
+
+	    mTextPaint.setColor(mRes.getColor(R.color.horizontext));
+	    mTextPaint.setTypeface(Typeface.MONOSPACE);
+	    mTextPaint.setTextSize(mRes.getDimension(R.dimen.horizontextsize));
+	    mTextPaint.setAntiAlias(true);
+
+	    mMarkerPaint.setColor(mRes.getColor(R.color.anglecolor));
+	    mMarkerPaint.setStyle(Style.STROKE);
+	    mMarkerPaint.setStrokeWidth(mRes.getDimension(R.dimen.anglestroke));
+	    mMarkerPaint.setAntiAlias(true);
+	    mMarker = new Path();
 	}catch(Exception e){
 	    Log.v(TAG, CLASS + "onConstruct(): Exception: " + e.toString());
 	}
@@ -165,7 +189,17 @@ public class HorizonView extends View {
 	if(mDraw == true){ 
 	    // attempt drawing to canvas
 	    try{
+		// draw movable horizonbar
 		canvas.drawLine(mStart.x, mStart.y, mEnd.x, mEnd.y, mPaint); 
+		// draw anglemeasurement
+		canvas.drawPath(mMarker, mMarkerPaint);
+		// draw degree text
+		canvas.drawText(String.valueOf(mAngle) + " " + (char) 0x00B0,
+				mCenter.x + mLength + 5,
+				mCenter.y - 20,
+				mTextPaint);
+		// draw horizon marker
+		canvas.drawLine(0, mCenter.y, mCenter.x*2, mCenter.y, mMarkerPaint);
 	    }catch(Exception e){
 		// TODO: clean up generic exceptions
 		Log.v(TAG, CLASS + "onDraw(): DrawException: " + e.toString());
@@ -180,17 +214,59 @@ public class HorizonView extends View {
     protected void setAngle(int angle){
 	//
 	if(angle != -1){
-	    // calculate the marker's start- and endpoint
-	    double x = Math.toRadians(mDefaultAngle - angle);
-	    float h = (float) mLength/2;
+	    // calculate necessary values for determining marker pos and dimensions
+	    double dOffset = (angle + 90) % 360;
+	    double dTemp = 0;
+	    if(dOffset > 180){
+		dTemp = -(360 - dOffset);
+	    }else{
+		dTemp = dOffset;
+	    }
+	    double dAngle = Math.toRadians(mDefaultAngle - angle);
+	    double dDeg = Math.toDegrees(dAngle);
+	    double finalAngle = (dDeg + 360) % 180;
+	    /*if(finalAngle > 180){
+		finalAngle = -(finalAngle);
+	    }*/
+	    float fLen = (float) mLength/2;
+	    mAngle = (int) dTemp;
 	    
 	    // attempt trigonometric operations
 	    // TODO: check whether these actually throw exceptions
 	    try{
-		int o = (int) (Math.sin(x) * h);
-		int a = (int) (Math.cos(x) * h);
+		// set the values for the horizonline
+		int o = (int) (Math.sin(dAngle) * fLen);
+		int a = (int) (Math.cos(dAngle) * fLen);
 		mStart.set((int) mCenter.x - a, (int) mCenter.y - o);
 		mEnd.set((int) mCenter.x + a, (int) mCenter.y + o);
+		// set the values for the anglemarker
+		RectF rectArc = new RectF(mCenter.x - fLen/2,
+					mCenter.y - fLen/2,
+					mCenter.x + fLen/2,
+					mCenter.y + fLen/2);
+		// build path for marker
+		Path tempPath = new Path();
+		// at angle measurement arc to path
+		tempPath.addArc(rectArc, (float) 0, (float) - dTemp);
+		// prep path for drawing measurement line
+		tempPath.moveTo(mCenter.x, mCenter.y);
+		
+		float offsetx = fLen*2 * (float) Math.cos(dAngle);
+		float offsety = fLen*2 * (float) Math.sin(dAngle);
+		
+		// set endpoint for measurement line		  
+		tempPath.lineTo(mCenter.x + offsetx, 
+				mCenter.y + offsety);
+		// set the marker
+		mMarker.set(new Path(tempPath));
+
+		//Log.v(TAG, CLASS + "f: " + finalAngle);
+		// add end knob to marker
+		float radiusCircle = 3;
+		mMarker.addCircle(mCenter.x + offsetx, 
+				  mCenter.y + offsety, 
+				  radiusCircle, 
+				  Direction.CCW);
 	    }catch(Exception e){
 		// TODO: get rid of generic exceptions
 		Log.v(TAG, CLASS + "setAngle(): Exception: " + e.toString());

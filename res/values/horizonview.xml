@@ -2,7 +2,11 @@
 <resources>
   <dimen name="horizonstrokewidth">10dp</dimen>
   <dimen name="horizonlength">100dp</dimen>
-  <dimen name="horizonheight">100dp</dimen>
-  
   <color name="horizoncolor">#64AF3235</color>
+
+  <color name="horizontext">#FFFFFF</color>
+  <dimen name="horizontextsize">10dp</dimen>
+
+  <dimen name="anglestroke">1dp</dimen>
+  <color name="anglecolor">#FFFFFF</color>
 </resources>
