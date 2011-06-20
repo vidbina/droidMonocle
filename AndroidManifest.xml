@@ -7,7 +7,7 @@
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
     <application android:label="@string/app_name" 
-		 android:debuggable="true">
+		 android:debuggable="false">
         <activity android:name=".Monocle"
                   android:label="@string/app_name" >
             <intent-filter>

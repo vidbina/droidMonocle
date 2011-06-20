@@ -212,7 +212,7 @@ public class HorizonView extends View {
      * @param angle the positive angle in degrees
      */
     protected void setAngle(int angle){
-	//
+	Log.v(TAG, CLASS + "angle:" + angle);
 	if(angle != -1){
 	    // calculate necessary values for determining marker pos and dimensions
 	    double dOffset = (angle + 90) % 360;

@@ -14,21 +14,27 @@ import android.content.Context;
 import android.view.ViewGroup.LayoutParams;
 import android.view.OrientationEventListener;
 import android.hardware.SensorManager;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
 import android.view.InflateException;
 
-//temp
+// temp
 import android.graphics.Point;
 
 import com.kingvidbina.test.ScopePreview;
 import com.kingvidbina.test.ImageProcessor;
 import com.kingvidbina.test.HorizonView;
 import com.kingvidbina.test.ProcessView;
+import com.kingvidbina.test.ValueView;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.util.List;
+import java.util.ArrayList;
 
 // TODO: rework all try - catch blocks to remove catching generic exceptions
 // TODO: handle orientation changes properly (rotation possibilities start at API Level 11). Orientation has been hardwired to landscape (see manifest)
@@ -60,10 +66,22 @@ public class Cam extends Activity implements Camera.PreviewCallback
     // the view to depict the horizon level
     private HorizonView mHorizonView;
     private LayoutParams mHorizonParams;
+    // the view to depict text data
+    private ValueView mValuePixel1;
+    private ValueView mValuePixel2;
+    private LayoutParams mValueParams;
     // the view used to render extra drawables
     private ProcessView mProcessView;
     private LayoutParams mProcessParams;
     private OrientationEventListener mOrientation;
+    // editorial bitmap
+    //private Bitmap mBitmap;
+    private ImageProcessor mProcessor = new ImageProcessor();
+    private int mStep;
+    private int mY;
+    private int mU;
+    private int mV;
+    private int mError;
 
     @Override
     public void onCreate(Bundle icicle){
@@ -73,6 +91,8 @@ public class Cam extends Activity implements Camera.PreviewCallback
 	// create objects for this activity
 	mHorizonView = new HorizonView(this);
 	mProcessView = new ProcessView(this);
+	mValuePixel1 = new ValueView(this);
+	mValuePixel2 = new ValueView(this);
 
 	/**
 	 * TODO: having problems inflating curstom views from xml
@@ -84,16 +104,21 @@ public class Cam extends Activity implements Camera.PreviewCallback
 	mHorizonParams = new LayoutParams(50, 50);
 	mProcessParams = new LayoutParams(LayoutParams.FILL_PARENT, 
 					  LayoutParams.FILL_PARENT);
-
+	mValueParams = new LayoutParams(LayoutParams.FILL_PARENT, 
+					LayoutParams.FILL_PARENT);
 	// TODO: check whether all nested methods throw Exceptions
 	try{
 	    // inflate xml layout
+	    Log.v(TAG, CLASS + "inflate layouts");
 	    setContentView(R.layout.cam);
-
+	    Log.v(TAG, CLASS + "layout inflated");
+	    Point p = new Point(20, 50);
+	    mValuePixel2.setPosition(p);
 	    // add views to the current activity
+	    addContentView(mValuePixel1, mValueParams);
+	    addContentView(mValuePixel2, mValueParams);
 	    addContentView(mHorizonView, mHorizonParams);
 	    addContentView(mProcessView, mProcessParams);
-
 	    // handle changes in orientation
 	    setOrientationListener();
 	}catch(InflateException e){
@@ -103,10 +128,9 @@ public class Cam extends Activity implements Camera.PreviewCallback
 	    // catches everything else
 	    Log.v(TAG, CLASS + "onCreate(): Exception: " + e.toString());
 	}
-
+	Log.v(TAG, CLASS + "values and shit set :)");
 	// set the view in which to display the Camera stream and corresponding data
 	setView();
-
 	// init cam in seperate thread
 	if(mCamera == null){
 	    new InitCamera().execute();
@@ -167,6 +191,29 @@ public class Cam extends Activity implements Camera.PreviewCallback
      */
     public void onPreviewFrame(byte[] data, Camera camera){
 	int len = Array.getLength(data);
+	mValuePixel1.dump(String.valueOf("len:" + len));
+
+	try{
+	    List<Point> list = mProcessor.processData(data, 0, 153600, 320, 480, 10);
+	    Log.v(TAG, CLASS + "list.size: " + list.size());
+	    mValuePixel2.dump(String.valueOf("pts: " + list.size()));
+	    // 
+	    Point[] p = new Point[list.size()];
+	    p = list.toArray(p);
+	    // convert list to array
+	    /*Point[] p = new Point[list.size()];
+	    for(int i = 0; i < list.size(); i++){
+		p[i] = 
+		}*/
+	    if(list.size() != 0){
+		mProcessView.setPoints(p);
+	    }else{
+		mProcessView.clearPoints();
+	    }
+
+	}catch(Exception e){
+	    Log.v(TAG, CLASS + "hmmmmmm :S - " + e.toString());
+	}
     }
 
     /** 
@@ -177,9 +224,11 @@ public class Cam extends Activity implements Camera.PreviewCallback
 	Log.v(TAG, CLASS + "setView()");
 	// set the view if it hasn't been set yet
 	// thus, the view is only settable once
+	Log.v(TAG, CLASS + "*****************");
 	if(mScope == null){
+	    Log.v(TAG, CLASS + "inflating previews");
 	    mScope = (ScopePreview) this.findViewById(R.id.scope);
-       	}
+	}
     }
     
     /**
@@ -194,6 +243,23 @@ public class Cam extends Activity implements Camera.PreviewCallback
 		}
 	    };
     }
+
+    public boolean onCreateOptionsMenu(Menu menu){
+	super.onCreateOptionsMenu(menu);
+	MenuInflater inflater = getMenuInflater();
+	inflater.inflate(R.menu.scope, menu);
+	return(true);
+    }
+    
+    public boolean onOptionsItemSelected(MenuItem choice){
+	switch(choice.getItemId()){
+	case R.id.scopesettings:
+	    Log.v(TAG, CLASS + "OPTION: " + choice.toString());
+	    return(true);
+	}
+	return(false);
+    }
+
 
     private class InitCamera extends AsyncTask <Integer, Void, Camera>{
 	/* assigning values to the Integer values doesn't work.
@@ -223,9 +289,15 @@ public class Cam extends Activity implements Camera.PreviewCallback
 		//set camera parameters
 		mParams = mCamera.getParameters();
 		mParams.setPreviewSize(480, 320);
+		/*Log.v(TAG, CLASS + "picsize: " + String.valueOf(mParams.getPictureSize()));
+		Log.v(TAG, CLASS + "picformat: " + String.valueOf(mParams.getPictureFormat()));
+		Log.v(TAG, CLASS + "pvsize: " + String.valueOf(mParams.getPreviewSize()));
+		Log.v(TAG, CLASS + "pvformat: " + String.valueOf(mParams.getPreviewFormat()));
+		Log.v(TAG, CLASS + "pvfps: " + String.valueOf(mParams.getPreviewFrameRate()));*/
 		//mParams.setPreviewFormat(PixelFormat.NV21);
 		mCamera.setParameters(mParams);
 		mScope.setCamera(mCamera);
+		mProcessView.setImageSize(480, 320);
 		return mCamera;
 	    }catch(RuntimeException e){
 		// TODO: remove generic exception

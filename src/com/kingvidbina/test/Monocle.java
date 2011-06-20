@@ -24,7 +24,9 @@ public class Monocle extends Activity implements OnClickListener
 
 	try{
 	    Button btnAbout = (Button) findViewById(R.id.button_about);
+	    Log.v(TAG, CLASS + ">>>");
 	    btnAbout.setOnClickListener((View.OnClickListener) this);
+	    Log.v(TAG, CLASS + "~~~");
 	    Log.v(TAG, CLASS + "onCreate(): inflation complete");
 	}catch(Exception e){
 	    Log.v(TAG, CLASS + "onCreate(): Exception: " + e.toString());

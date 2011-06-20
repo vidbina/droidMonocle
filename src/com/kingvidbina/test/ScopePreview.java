@@ -46,14 +46,18 @@ public class ScopePreview extends SurfaceView implements SurfaceHolder.Callback
 	setupHolder();
     }
 
-    private void setupCanvas(){
+    @Override
+    protected void onMeasure(int w, int h){
+	super.onMeasure(w, h);
+    }
+
+    /*private void setupCanvas(){
 	mBitmap = Bitmap.createBitmap(mParams.getPreviewSize().width, mParams.getPreviewSize().height, Config.ARGB_8888);
 	mCanvas = new Canvas(mBitmap);
-    }
+	}*/
 
     /**
      * prepares the holder 
-     * 
      */
     private void setupHolder(){
 	Log.v(TAG, CLASS + "setupHolder()");
@@ -133,7 +137,7 @@ public class ScopePreview extends SurfaceView implements SurfaceHolder.Callback
 	mSurfaceReady = true;
 	Log.v(TAG, CLASS + "surfaceCreated(): " + holder.toString());
     }
-
+    
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height){
 	// change camera preview surface if camera exists
 	if(mCamera != null){

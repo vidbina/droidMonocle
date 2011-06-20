@@ -8,4 +8,13 @@
     <string name="button_about">About</string>
 
     <string name="about_text">Written by David Asabina</string>
+    
+    <string name="Y">chroma</string>
+    <string name="U">U</string>
+    <string name="V">V</string>
+
+    <string name="errorY">Error range for Y component</string>
+    <string name="errorU">Error range for U component</string>
+    <string name="errorV">Error range for V component</string>
+    
 </resources>
